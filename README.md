@@ -7,8 +7,11 @@
 Welcome to the **System Control Dashboard**, a sleek, web-based application for remotely managing Desktop and Server devices using Wake-on-LAN (WOL) and MQTT. Featuring a modern dark-themed UI, interactive animations, and real-time updates, this dashboard is designed for ease of use and reliability.
 
 <p align="center">
-  <a src="https://codewizard-404.github.io/ESP-desktop-control-dashboard/" >
+  <a href="https://codewizard-404.github.io/ESP-desktop-control-dashboard/">
+    System Control Dashboard preview
+  </a>
 </p>
+
 
 ## 📋 Table of Contents
 
