@@ -14,8 +14,8 @@ struct Proxy {
   WiFiServer* server;
 };
 // --- WIFI SETUP ---
-const char* ssid = "TOPNET_2.4G";
-const char* password = "TopPass2";
+const char* ssid = "Your-WiFi-SSID";
+const char* password = "Your-WiFi-Password";
 // Fixed IP
 IPAddress local_IP(192, 168, 100, 101);
 IPAddress gateway(192, 168, 100, 1);
@@ -28,10 +28,10 @@ uint8_t desktopMac[6] = {0xD8,0xBB,0xC1,0xCE,0xCF,0x93};
 IPAddress serverIP(192, 168, 100, 95);
 IPAddress desktopIP(192, 168, 100, 99);
 // --- MQTT SETUP ---
-const char* mqttServer = "5239ffaebcbc49c6890527ee9c4b76e8.s1.eu.hivemq.cloud";
 const int mqttPort = 8883;
-const char* mqttUser = "ESP_WOL";
-const char* mqttPassword = "@PasswordMQTT404*";
+const char* mqttServer = "your-mqtt-broker";
+const char* mqttUser = "your-mqtt-username";
+const char* mqttPassword = "your-mqtt-password";
 WiFiClientSecure espClient;
 PubSubClient client(espClient);
 WiFiUDP Udp;
