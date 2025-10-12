@@ -3,10 +3,10 @@ import threading
 import customtkinter as ctk
 from CTkMessagebox import CTkMessagebox
 import paho.mqtt.client as mqtt
-MQTT_SERVER = "5239ffaebcbc49c6890527ee9c4b76e8.s1.eu.hivemq.cloud"
 MQTT_PORT = 8883
-MQTT_USER = "ESP_WOL"
-MQTT_PASS = "@PasswordMQTT404*"
+MQTT_SERVER = "your-mqtt-broker"
+MQTT_USER = "your-mqtt-username"
+MQTT_PASS = "your-mqtt-password"
 TOPIC = "desktop/commands"
 REPLY_TOPIC = "desktop/commands/reply"
 ctk.set_appearance_mode("dark")
@@ -71,3 +71,4 @@ def mqtt_loop():
 threading.Thread(target=mqtt_loop, daemon=True).start()
 print("Listening for shutdown/sleep/ht commands...")
 root.mainloop()
+
