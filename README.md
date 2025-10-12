@@ -50,6 +50,14 @@ Built with Tailwind CSS, Font Awesome, and JavaScript, the dashboard is both vis
 
 > **Note**: Demo video coming soon! For now, check the [Installation](#-installation) section to try it yourself.
 
+## 📸 Screenshot
+
+Below is a preview of the System Control Dashboard's sleek and modern interface:
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/CodeWizard-404/ESP-desktop-control-dashboard/refs/heads/main/ESP-desktop-control-dashboard.png" alt="System Control Dashboard Screenshot" width="600">
+</p>
+
 ## 🛠️ Prerequisites
 
 Before setting up, ensure you have:
