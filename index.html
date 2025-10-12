@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>System Control Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: #0a0a0a;
+      color: #e0e0e0;
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      opacity: 0.8;
+    }
+    .container {
+      max-width: 100%;
+      width: 100%;
+      padding: 2rem 1rem;
+      box-sizing: border-box;
+      position: relative;
+      z-index: 1;
+    }
+    @media (min-width: 640px) {
+      .container {
+        max-width: 36rem;
+        padding: 2.5rem;
+      }
+    }
+    .card {
+background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(50,50, 50, 0.3));
+  backdrop-filter: blur(5px);
+      border: 1px solid linear-gradient(45deg, rgba(50, 50, 50, 0.1), rgba(80, 80, 80, 0.05));
+      border-radius: 1.5rem;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+      padding: 1.75rem;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 28px rgba(0, 0, 0, 0.5);
+    }
+    .status-dot {
+      height: 0.45rem;
+      width: 0.45rem;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 0.4rem;
+      box-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
+      animation: pulse 1.8s infinite;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.15); }
+      100% { transform: scale(1); }
+    }
+    .log-panel {
+      background: rgba(30, 30, 30, 0.85);
+      backdrop-filter: blur(8px);
+      border: 1px solid linear-gradient(45deg, rgba(50, 50, 50, 0.1), rgba(80, 80, 80, 0.05));
+      border-radius: 1rem;
+      padding: 1rem;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.85rem;
+      color: #b0b0b0;
+      max-height: 20rem;
+      overflow-y: auto;
+      box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.3);
+    }
+    @media (max-width: 639px) {
+      .log-panel {
+        font-size: 0.8rem;
+      }
+      .log-entry {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0rem;
+        margin-bottom: 0.5rem;
+
+      }
+    }
+    .log-panel::-webkit-scrollbar {
+      width: 0.15rem;
+    }
+    .log-panel::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 0.1rem;
+    }
+    .log-entry {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 0.2rem;
+      padding: 0.05rem 0.5rem;
+      border-radius: 0.25rem;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+    .log-entry:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #ffffff;
+    }
+    .fade-in {
+      animation: fadein 0.3s ease-out;
+    }
+    @keyframes fadein {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .spinner {
+      border: 1.5px solid rgba(255, 255, 255, 0.2);
+      border-top-color: #e0e0e0;
+      animation: spin 0.7s linear infinite;
+      border-radius: 50%;
+      width: 1.2rem;
+      height: 1.2rem;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .btn {
+      background: rgba(40, 40, 40, 0.9);
+      color: #e0e0e0;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      font-weight: 500;
+      font-size: 0.85rem;
+      transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid linear-gradient(45deg, rgba(50, 50, 50, 0.1), rgba(80, 80, 80, 0.05));
+    }
+    .btn::after {
+      content: '';
+      position: absolute;
+      top: var(--y, 0);
+      left: var(--x, 0);
+      width: 0;
+      height: 0;
+      background: radial-gradient(circle closest-side, rgba(255, 255, 255, 0.12), transparent);
+      transform: translate(-50%, -50%);
+      transition: width 0.4s ease, height 0.4s ease;
+    }
+    .btn:hover::after {
+      width: 300%;
+      height: 300%;
+    }
+    .btn:hover {
+      background: rgba(50, 50, 50, 0.9);
+      transform: scale(1.02);
+      box-shadow: 0 2px 8px rgba(255, 255, 255, 0.08);
+      color: #ffffff;
+    }
+    .btn:active {
+      transform: scale(1);
+    }
+    .btn-disabled {
+      background: rgba(30, 30, 30, 0.9);
+      color: #606060;
+      cursor: not-allowed;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .btn-disabled:hover {
+      transform: none;
+      box-shadow: none;
+    }
+    @media (min-width: 640px) {
+      .btn {
+        padding: 0.6rem 1.2rem;
+        font-size: 0.9rem;}
+
+    }
+    .loading-overlay {
+      background: rgba(0, 0, 0, 0.95);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      transition: opacity 0.3s ease;
+    }
+    .modal {
+      background: rgba(20, 20, 20, 0.95);
+      backdrop-filter: blur(25px);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      max-width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 60;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+      border: 1px solid linear-gradient(45deg, rgba(50, 50, 50, 0.1), rgba(80, 80, 80, 0.05));
+      animation: modalPop 0.3s ease-out;
+    }
+    @keyframes modalPop {
+      from { transform: translate(-50%, -50%) scale(0.98); opacity: 0; }
+      to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    }
+    .overlay {
+      background: rgba(0, 0, 0, 0.9);
+      position: fixed;
+      inset: 0;
+      z-index: 55;
+      backdrop-filter: blur(3px);
+    }
+    .header {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.015em;
+      text-align: center;
+      margin-bottom: 1rem;
+      color: #ffffff;
+    }
+    @media (min-width: 640px) {
+      .header {
+        font-size: 1.75rem;
+      }
+
+
+    }
+    .section-header {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      transition: color 0.3s ease;
+    }
+    .section-header:hover {
+      color: #ffffff;
+    }
+    .guide-content {
+      line-height: 1.5;
+      font-size: 0.85rem;
+    }
+    .guide-content ul {
+      list-style-type: none;
+      padding-left: 0;
+      margin-bottom: 1rem;
+    }
+    .guide-content li {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 0.4rem;
+      font-size: 0.85rem;
+    }
+    .guide-content li::before {
+      content: '•';
+      color: #606060;
+      margin-right: 0.5rem;
+      font-size: 1rem;
+    }
+    .input-field {
+      background: rgba(40, 40, 40, 0.9);
+      color: #e0e0e0;
+      border: 1px solid linear-gradient(45deg, rgba(50, 50, 50, 0.1), rgba(80, 80, 80, 0.05));
+      border-radius: 0.5rem;
+      padding: 0.5rem 0.8rem;
+      width: 100%;
+      font-size: 0.85rem;
+      transition: border 0.3s ease, box-shadow 0.3s ease;
+    }
+    .input-field:focus {
+      border-color: rgba(255, 255, 255, 0.2);
+      box-shadow: 0 0 8px rgba(255, 255, 255, 0.1);
+      outline: none;
+    }
+    .collapse-content {
+      overflow: hidden;
+      transition: max-height 0.3s ease, opacity 0.3s ease;
+    }
+.bg-transparent{
+background-color: rgba(30, 30, 30, 0.85) !important;
+}
+.rounded-md{
+border-radius: 0.5rem;
+}
+
+ @media (max-width: 640px) {
+    .modal {
+top: auto;
+    left: auto;
+    transform: none;
+      }
+}
+  </style>
+</head>
+<body>
+  <canvas id="bgCanvas"></canvas>
+
+  <div class="container">
+    <div class="card">
+      <div class="flex justify-between items-center mb-3">
+        <h1 class="header">System Control</h1>
+        <button id="guideBtn" class="text-gray-500 hover:text-white transition text-base"><i class="fas fa-question-circle"></i></button>
+      </div>
+
+      <!-- Desktop Section -->
+      <div class="mb-6">
+        <h2 class="section-header"><i class="fas fa-desktop mr-1"></i>Desktop</h2>
+        <div class="flex items-center justify-between bg-transparent rounded-md p-2.5 border-[linear-gradient(45deg,rgba(50,50,50,0.1),rgba(80,80,80,0.05))]">
+          <div class="flex items-center gap-1.5">
+            <span id="desktopStatusDot" class="status-dot bg-[#6b7280]"></span>
+            <span id="desktopStatusText" class="text-xs font-medium">Checking status...</span>
+          </div>
+          <button id="desktopRefreshBtn" class="btn text-xs py-1.5 px-2.5"><i class="fas fa-sync-alt mr-0.5"></i>Refresh</button>
+        </div>
+        <div id="desktopActionLoading" class="hidden flex items-center justify-center gap-1.5 bg-transparent rounded-md p-2.5 mt-2 border-[linear-gradient(45deg,rgba(50,50,50,0.1),rgba(80,80,80,0.05))]">
+          <div class="spinner"></div>
+          <span id="desktopActionText" class="text-xs font-medium">Processing...</span>
+        </div>
+        <div id="desktopButtons" class="flex flex-wrap gap-2 justify-center mt-2"></div>
+      </div>
+
+      <!-- Server Section -->
+      <div class="mb-6">
+        <h2 id="serverToggle" class="section-header"><i class="fas fa-server mr-1"></i>Server (Admin) <span id="serverChevron" class="ml-auto text-gray-500">▼</span></h2>
+        <div id="serverContent" class="collapse-content max-h-0 opacity-0">
+          <div id="serverControls" class="mt-2 hidden">
+            <div class="flex items-center justify-between bg-transparent rounded-md p-2.5 border-[linear-gradient(45deg,rgba(50,50,50,0.1),rgba(80,80,80,0.05))]">
+              <div class="flex items-center gap-1.5">
+                <span id="serverStatusDot" class="status-dot bg-[#6b7280]"></span>
+                <span id="serverStatusText" class="text-xs font-medium">Checking status...</span>
+              </div>
+              <button id="serverRefreshBtn" class="btn text-xs py-1.5 px-2.5"><i class="fas fa-sync-alt mr-0.5"></i>Refresh</button>
+            </div>
+            <div id="serverActionLoading" class="hidden flex items-center justify-center gap-1.5 bg-transparent rounded-md p-2.5 mt-2 border-[linear-gradient(45deg,rgba(50,50,50,0.1),rgba(80,80,80,0.05))]">
+              <div class="spinner"></div>
+              <span id="serverActionText" class="text-xs font-medium">Processing...</span>
+            </div>
+            <div id="serverButtons" class="flex flex-wrap gap-2 justify-center mt-2"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Log Panel -->
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-semibold text-gray-300">
+            <i class="fas fa-terminal mr-1"></i>Logs
+          </span>
+          <button id="clearLog" class="text-xs text-gray-500 hover:text-white transition"><i class="fas fa-trash-alt mr-0.5"></i>Clear</button>
+        </div>
+        <div id="log" class="log-panel">
+          <div class="log-entry">
+            <span class="text-gray-600">[Init]</span>
+            <span class="text-gray-300">Initialized.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Login Modal -->
+  <div id="adminLoginOverlay" class="overlay hidden" onclick="toggleAdminLogin()"></div>
+  <div id="adminLoginModal" class="modal hidden">
+    <h3 class="text-lg font-semibold mb-3">Admin Login</h3>
+    <input id="adminUsername" class="input-field mb-2" placeholder="Username" type="text">
+    <input id="adminPassword" class="input-field mb-3" placeholder="Password" type="password">
+    <button id="adminLoginBtn" class="btn w-full text-xs">Login</button>
+  </div>
+
+  <!-- Guide Modal -->
+  <div id="guideOverlay" class="overlay hidden" onclick="toggleGuide()"></div>
+  <div id="guideModal" class="modal hidden guide-content">
+    <h3 class="text-lg font-semibold mb-3">System Control Guide</h3>
+    <p class="text-gray-400 mb-2">Effortlessly manage your devices:</p>
+    <ul class="text-gray-400">
+      <li>Click Refresh to check desktop status.</li>
+      <li>Use Wake Up to power on an offline desktop.</li>
+      <li>For online desktops, select Shutdown, Sleep, or Hibernate (auto-confirms in 5s).</li>
+      <li>Monitor real-time logs; clear as needed.</li>
+      <li>Expand Server section to access admin login for server controls.</li>
+      <li>If issues arise, verify connection or refresh the page.</li>
+    </ul>
+    <button class="btn mt-3 w-full text-xs" onclick="toggleGuide()">Close</button>
+  </div>
+
+<script>
+  // Enhanced background animation
+  const canvas = document.getElementById('bgCanvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  window.addEventListener('resize', () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  });
+
+  class Dot {
+    constructor() {
+      this.x = Math.random() * canvas.width;
+      this.y = Math.random() * canvas.height;
+      this.radius = Math.random() * 2.5 + 0.5;
+      this.dx = (Math.random() - 0.5) * 0.8;
+      this.dy = (Math.random() - 0.5) * 0.8;
+      this.opacity = Math.random() * 0.3 + 0.1;
+      this.pulseSpeed = Math.random() * 0.03 + 0.01;
+      this.pulsePhase = Math.random() * Math.PI * 2;
+      this.trail = [];
+      this.spark = false;
+      this.sparkTime = Math.random() * 5000 + 2000;
+      this.lastSpark = Date.now();
+    }
+    draw() {
+      const now = Date.now();
+      if (now - this.lastSpark > this.sparkTime) {
+        this.spark = true;
+        this.lastSpark = now;
+        this.sparkTime = Math.random() * 5000 + 2000;
+      }
+      const pulse = Math.sin(now * this.pulseSpeed + this.pulsePhase) * 0.5 + 0.5;
+      const sparkScale = this.spark ? 1.5 : 1;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius * (0.8 + pulse * 0.2) * sparkScale, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255, 255, 255, ${this.spark ? this.opacity * 1.5 : this.opacity})`;
+      ctx.fill();
+      if (this.spark) {
+        this.spark = false;
+      }
+      // Draw trail
+      this.trail.forEach((point, i) => {
+        ctx.beginPath();
+        ctx.arc(point.x, point.y, this.radius * (0.5 - i * 0.1), 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity * (0.5 - i * 0.1)})`;
+        ctx.fill();
+      });
+    }
+    update() {
+      if (this.x > canvas.width || this.x < 0) this.dx = -this.dx;
+      if (this.y > canvas.height || this.y < 0) this.dy = -this.dy;
+      this.x += this.dx;
+      this.y += this.dy;
+      this.trail.unshift({ x: this.x, y: this.y });
+      if (this.trail.length > 5) this.trail.pop();
+      this.draw();
+    }
+  }
+
+  const dots = [];
+  for (let i = 0; i < 150; i++) {
+    dots.push(new Dot());
+  }
+
+  function connectDots() {
+    for (let i = 0; i < dots.length; i++) {
+      for (let j = i + 1; j < dots.length; j++) {
+        const dist = Math.sqrt((dots[i].x - dots[j].x) ** 2 + (dots[i].y - dots[j].y) ** 2);
+        if (dist < 150) {
+          const opacity = 0.2 - dist / 750;
+          const pulse = Math.sin(Date.now() * 0.002) * 0.3 + 0.7;
+          ctx.beginPath();
+          ctx.moveTo(dots[i].x, dots[i].y);
+          ctx.lineTo(dots[j].x, dots[j].y);
+          ctx.strokeStyle = `rgba(255, 255, 255, ${opacity * pulse})`;
+          ctx.lineWidth = 0.6 + Math.sin(Date.now() * 0.0015) * 0.3;
+          ctx.stroke();
+        }
+      }
+    }
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    connectDots();
+    dots.forEach(dot => dot.update());
+    requestAnimationFrame(animate);
+  }
+  animate();
+
+  const logEl = document.getElementById('log');
+  const desktopButtonsDiv = document.getElementById('desktopButtons');
+  const desktopStatusDot = document.getElementById('desktopStatusDot');
+  const desktopStatusText = document.getElementById('desktopStatusText');
+  const desktopRefreshBtn = document.getElementById('desktopRefreshBtn');
+  const desktopActionLoading = document.getElementById('desktopActionLoading');
+  const desktopActionText = document.getElementById('desktopActionText');
+  const serverToggle = document.getElementById('serverToggle');
+  const serverChevron = document.getElementById('serverChevron');
+  const serverContent = document.getElementById('serverContent');
+  const adminLoginOverlay = document.getElementById('adminLoginOverlay');
+  const adminLoginModal = document.getElementById('adminLoginModal');
+  const adminUsername = document.getElementById('adminUsername');
+  const adminPassword = document.getElementById('adminPassword');
+  const adminLoginBtn = document.getElementById('adminLoginBtn');
+  const serverControls = document.getElementById('serverControls');
+  const serverButtonsDiv = document.getElementById('serverButtons');
+  const serverStatusDot = document.getElementById('serverStatusDot');
+  const serverStatusText = document.getElementById('serverStatusText');
+  const serverRefreshBtn = document.getElementById('serverRefreshBtn');
+  const serverActionLoading = document.getElementById('serverActionLoading');
+  const serverActionText = document.getElementById('serverActionText');
+  const loadingOverlay = document.getElementById('loadingOverlay');
+  const clearLog = document.getElementById('clearLog');
+  const guideBtn = document.getElementById('guideBtn');
+  const guideOverlay = document.getElementById('guideOverlay');
+  const guideModal = document.getElementById('guideModal');
+
+  let isServerAdmin = false;
+
+  function logMessage(msg) {
+    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const entry = document.createElement('div');
+    entry.className = 'log-entry fade-in';
+    const isInit = msg === 'Initialized.' || msg === 'Logs cleared.';
+    const timeLabel = isInit ? '[Init]' : `[${time}]`;
+    const displayMsg = window.innerWidth < 640 ? `${timeLabel}<br>${msg}` : `${timeLabel} ${msg}`;
+    entry.innerHTML = `<span class="text-gray-600">${timeLabel}</span><span class="text-gray-300">${msg}</span>`;
+    logEl.appendChild(entry);
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+
+  function clearButtons(div) {
+    div.innerHTML = '';
+  }
+
+  function addButton(div, label, topic, payload, disabled = false, icon = '') {
+    const btn = document.createElement('button');
+    btn.innerHTML = `${icon ? '<i class="fas ' + icon + ' mr-0.5"></i>' : ''}${label}`;
+    btn.className = 'btn';
+    if (disabled) {
+      btn.classList.add('btn-disabled');
+      btn.disabled = true;
+    } else {
+      btn.addEventListener('click', () => {
+        logMessage(`Executing "${label}"...`);
+        client.publish(topic, payload);
+        setActionLoading(div.id.includes('desktop') ? 'desktop' : 'server', true, `Executing ${label}...`);
+      });
+    }
+    div.appendChild(btn);
+  }
+
+  function setStatus(device, color, text) {
+    const dot = device === 'desktop' ? desktopStatusDot : serverStatusDot;
+    const statusTextEl = device === 'desktop' ? desktopStatusText : serverStatusText;
+    dot.style.backgroundColor = color;
+    statusTextEl.textContent = text;
+  }
+
+  function setActionLoading(device, isLoading, text = 'Processing...') {
+    const loadingEl = device === 'desktop' ? desktopActionLoading : serverActionLoading;
+    const actionTextEl = device === 'desktop' ? desktopActionText : serverActionText;
+    const buttonsDiv = device === 'desktop' ? desktopButtonsDiv : serverButtonsDiv;
+    loadingEl.classList.toggle('hidden', !isLoading);
+    if (isLoading) actionTextEl.textContent = text;
+    buttonsDiv.classList.toggle('hidden', isLoading);
+  }
+
+  clearLog.addEventListener('click', () => {
+    logEl.innerHTML = '';
+    logMessage('Logs cleared.');
+  });
+
+  guideBtn.addEventListener('click', toggleGuide);
+
+  function toggleGuide() {
+    guideOverlay.classList.toggle('hidden');
+    guideModal.classList.toggle('hidden');
+  }
+
+  serverToggle.addEventListener('click', () => {
+    serverContent.classList.toggle('max-h-0');
+    serverContent.classList.toggle('max-h-[400px]');
+    serverContent.classList.toggle('opacity-0');
+    serverChevron.textContent = serverContent.classList.contains('max-h-0') ? '▼' : '▲';
+    if (!serverContent.classList.contains('max-h-0') && !isServerAdmin) {
+      toggleAdminLogin();
+    }
+  });
+
+  function toggleAdminLogin() {
+    adminLoginOverlay.classList.toggle('hidden');
+    adminLoginModal.classList.toggle('hidden');
+  }
+
+  adminLoginBtn.addEventListener('click', () => {
+    if (adminUsername.value === 'admin' && adminPassword.value === 'admin') {
+      isServerAdmin = true;
+      toggleAdminLogin();
+      logMessage('Admin login successful.');
+      setActionLoading('server', true, 'Checking server status...');
+      client.subscribe(["status/server/reply", "wake/server/reply"]);
+      client.publish("status/server", "status");
+      serverControls.classList.remove('hidden');
+    } else {
+      logMessage('Invalid admin credentials.');
+    }
+  });
+
+  const client = mqtt.connect("wss://5239ffaebcbc49c6890527ee9c4b76e8.s1.eu.hivemq.cloud:8884/mqtt", {
+    username: "ESP_WOL",
+    password: "@PasswordMQTT404*"
+  });
+
+  client.on('connect', () => {
+    logMessage('Connected to MQTT broker.');
+    client.subscribe(["status/desktop/reply", "wake/desktop/reply"], () => {
+      logMessage('Subscribed to desktop replies.');
+      client.publish("status/desktop", "status");
+    });
+    loadingOverlay.classList.add('hidden');
+  });
+
+  client.on('message', (topic, message) => {
+    const msg = message.toString().trim();
+    logMessage(`${msg}`);
+    const device = topic.includes('desktop') ? 'desktop' : 'server';
+    const buttonsDiv = device === 'desktop' ? desktopButtonsDiv : serverButtonsDiv;
+    clearButtons(buttonsDiv);
+
+    const lowerMsg = msg.toLowerCase();
+
+    if (lowerMsg.includes('offline')) {
+      setActionLoading(device, false);
+      setStatus(device, '#6b7280', `${device.charAt(0).toUpperCase() + device.slice(1)} Offline`);
+      addButton(buttonsDiv, "Wake Up", `wake/${device}`, "wake", !isServerAdmin && device === 'server', 'fa-bolt');
+    } else if (lowerMsg.includes('online') && !lowerMsg.includes('already online')) {
+      setActionLoading(device, false);
+      setStatus(device, '#ffffff', `${device.charAt(0).toUpperCase() + device.slice(1)} Online`);
+      addButton(buttonsDiv, "Shutdown", `status/${device}`, "off", !isServerAdmin && device === 'server', 'fa-power-off');
+      addButton(buttonsDiv, "Sleep", `status/${device}`, "sleep", !isServerAdmin && device === 'server', 'fa-bed');
+      if (device === 'desktop') addButton(buttonsDiv, "Hibernate", `status/${device}`, "ht", false, 'fa-snowflake');
+    } else if (lowerMsg.includes('starting') || lowerMsg.includes('waiting') || lowerMsg.includes('sent') || lowerMsg.includes('signal')) {
+      setActionLoading(device, true, msg);
+    } else if (lowerMsg.includes('confirmed') || lowerMsg.includes('initiated') || lowerMsg.includes('failed') || lowerMsg.includes('timeout') || lowerMsg.includes('already online')) {
+      setActionLoading(device, false);
+      setTimeout(() => {
+        client.publish(`status/${device}`, "status");
+      }, 1500);
+    } else if (lowerMsg.includes('cancelled')) {
+      setActionLoading(device, false);
+      setStatus(device, '#ffffff', `${device.charAt(0).toUpperCase() + device.slice(1)} Online (Cancelled)`);
+      addButton(buttonsDiv, "Shutdown", `status/${device}`, "off", !isServerAdmin && device === 'server', 'fa-power-off');
+      addButton(buttonsDiv, "Sleep", `status/${device}`, "sleep", !isServerAdmin && device === 'server', 'fa-bed');
+      if (device === 'desktop') addButton(buttonsDiv, "Hibernate", `status/${device}`, "ht", false, 'fa-snowflake');
+    }
+  });
+
+  desktopRefreshBtn.addEventListener('click', () => {
+    logMessage('Checking desktop status...');
+    client.publish("status/desktop", "status");
+    setActionLoading('desktop', true, 'Checking status...');
+  });
+
+  serverRefreshBtn.addEventListener('click', () => {
+    if (isServerAdmin) {
+      logMessage('Checking server status...');
+      client.publish("status/server", "status");
+      setActionLoading('server', true, 'Checking status...');
+    }
+  });
+
+  client.on('close', () => {
+    logMessage("Disconnected from broker.");
+    setStatus('desktop', '#6b7280', 'Disconnected');
+    if (isServerAdmin) setStatus('server', '#6b7280', 'Disconnected');
+    setActionLoading('desktop', false);
+    setActionLoading('server', false);
+    loadingOverlay.classList.remove('hidden');
+  });
+
+  setActionLoading('desktop', true, 'Checking status...');
+</script>
+</body>
+</html>
