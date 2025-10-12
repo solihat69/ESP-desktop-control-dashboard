@@ -55,7 +55,7 @@ Built with Tailwind CSS, Font Awesome, and JavaScript, the dashboard is both vis
 Below is a preview of the System Control Dashboard's sleek and modern interface:
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/CodeWizard-404/ESP-desktop-control-dashboard/refs/heads/main/ESP-desktop-control-dashboard.png" alt="System Control Dashboard Screenshot">
+  <img src="https://raw.githubusercontent.com/CodeWizard-404/ESP-desktop-control-dashboard/refs/heads/main/Wep-page.png" alt="System Control Dashboard Screenshot">
 </p>
 
 ## 🛠️ Prerequisites
