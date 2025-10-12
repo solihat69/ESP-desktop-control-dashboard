@@ -46,8 +46,8 @@
       }
     }
     .card {
-background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(50,50, 50, 0.3));
-  backdrop-filter: blur(5px);
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(50,50, 50, 0.3));
+      backdrop-filter: blur(5px);
       border: 1px solid linear-gradient(45deg, rgba(50, 50, 50, 0.1), rgba(80, 80, 80, 0.05));
       border-radius: 1.5rem;
       box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
@@ -94,7 +94,6 @@ background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(50,50, 50, 0
         align-items: flex-start;
         gap: 0rem;
         margin-bottom: 0.5rem;
-
       }
     }
     .log-panel::-webkit-scrollbar {
@@ -184,8 +183,8 @@ background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(50,50, 50, 0
     @media (min-width: 640px) {
       .btn {
         padding: 0.6rem 1.2rem;
-        font-size: 0.9rem;}
-
+        font-size: 0.9rem;
+      }
     }
     .loading-overlay {
       background: rgba(0, 0, 0, 0.95);
@@ -238,8 +237,6 @@ background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(50,50, 50, 0
       .header {
         font-size: 1.75rem;
       }
-
-
     }
     .section-header {
       font-size: 1rem;
@@ -293,20 +290,19 @@ background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(50,50, 50, 0
       overflow: hidden;
       transition: max-height 0.3s ease, opacity 0.3s ease;
     }
-.bg-transparent{
-background-color: rgba(30, 30, 30, 0.85) !important;
-}
-.rounded-md{
-border-radius: 0.5rem;
-}
-
- @media (max-width: 640px) {
-    .modal {
-top: auto;
-    left: auto;
-    transform: none;
+    .bg-transparent {
+      background-color: rgba(30, 30, 30, 0.85) !important;
+    }
+    .rounded-md {
+      border-radius: 0.5rem;
+    }
+    @media (max-width: 640px) {
+      .modal {
+        top: auto;
+        left: auto;
+        transform: none;
       }
-}
+    }
   </style>
 </head>
 <body>
@@ -647,8 +643,19 @@ top: auto;
       if (device === 'desktop') addButton(buttonsDiv, "Hibernate", `status/${device}`, "ht", false, 'fa-snowflake');
     } else if (lowerMsg.includes('starting') || lowerMsg.includes('waiting') || lowerMsg.includes('sent') || lowerMsg.includes('signal')) {
       setActionLoading(device, true, msg);
-    } else if (lowerMsg.includes('confirmed') || lowerMsg.includes('initiated') || lowerMsg.includes('failed') || lowerMsg.includes('timeout') || lowerMsg.includes('already online')) {
+    } else if (lowerMsg.includes('confirmed') || lowerMsg.includes('initiated') || lowerMsg.includes('already online')) {
       setActionLoading(device, false);
+      setStatus(device, '#ffffff', `${device.charAt(0).toUpperCase() + device.slice(1)} Online`);
+      addButton(buttonsDiv, "Shutdown", `status/${device}`, "off", !isServerAdmin && device === 'server', 'fa-power-off');
+      addButton(buttonsDiv, "Sleep", `status/${device}`, "sleep", !isServerAdmin && device === 'server', 'fa-bed');
+      if (device === 'desktop') addButton(buttonsDiv, "Hibernate", `status/${device}`, "ht", false, 'fa-snowflake');
+      setTimeout(() => {
+        client.publish(`status/${device}`, "status");
+      }, 1500);
+    } else if (lowerMsg.includes('failed') || lowerMsg.includes('timeout')) {
+      setActionLoading(device, false);
+      setStatus(device, '#6b7280', `${device.charAt(0).toUpperCase() + device.slice(1)} Offline`);
+      addButton(buttonsDiv, "Wake Up", `wake/${device}`, "wake", !isServerAdmin && device === 'server', 'fa-bolt');
       setTimeout(() => {
         client.publish(`status/${device}`, "status");
       }, 1500);
