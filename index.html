@@ -186,17 +186,6 @@
         font-size: 0.9rem;
       }
     }
-    .loading-overlay {
-      background: rgba(0, 0, 0, 0.95);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      position: fixed;
-      inset: 0;
-      z-index: 50;
-      transition: opacity 0.3s ease;
-    }
     .modal {
       background: rgba(20, 20, 20, 0.95);
       backdrop-filter: blur(25px);
@@ -254,6 +243,17 @@
       line-height: 1.5;
       font-size: 0.85rem;
     }
+    .guide-content h4 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-top: 1.5rem;
+      margin-bottom: 0.75rem;
+      color: #ffffff;
+    }
+    .guide-content p {
+      margin-bottom: 1rem;
+      color: #b0b0b0;
+    }
     .guide-content ul {
       list-style-type: none;
       padding-left: 0;
@@ -270,6 +270,13 @@
       color: #606060;
       margin-right: 0.5rem;
       font-size: 1rem;
+    }
+    .guide-content code {
+      background: rgba(40, 40, 40, 0.9);
+      padding: 0.2rem 0.4rem;
+      border-radius: 0.25rem;
+      font-family: 'IBM Plex Mono', monospace;
+      color: #e0e0e0;
     }
     .input-field {
       background: rgba(40, 40, 40, 0.9);
@@ -311,7 +318,7 @@
   <div class="container">
     <div class="card">
       <div class="flex justify-between items-center mb-3">
-        <h1 class="header">System Control</h1>
+        <h1 class="header">System Control Dashboard</h1>
         <button id="guideBtn" class="text-gray-500 hover:text-white transition text-base"><i class="fas fa-question-circle"></i></button>
       </div>
 
@@ -383,21 +390,112 @@
   <!-- Guide Modal -->
   <div id="guideOverlay" class="overlay hidden" onclick="toggleGuide()"></div>
   <div id="guideModal" class="modal hidden guide-content">
-    <h3 class="text-lg font-semibold mb-3">System Control Guide</h3>
-    <p class="text-gray-400 mb-2">Effortlessly manage your devices:</p>
-    <ul class="text-gray-400">
-      <li>Click Refresh to check desktop status.</li>
-      <li>Use Wake Up to power on an offline desktop.</li>
-      <li>For online desktops, select Shutdown, Sleep, or Hibernate (auto-confirms in 5s).</li>
-      <li>Monitor real-time logs; clear as needed.</li>
-      <li>Expand Server section to access admin login for server controls.</li>
-      <li>If issues arise, verify connection or refresh the page.</li>
+    <h3 class="text-lg font-semibold mb-3">System Control Dashboard Guide</h3>
+    <p class="text-gray-400 mb-4">Welcome to the System Control Dashboard! This guide provides detailed instructions on how to manage your Desktop and Server devices, including checking their status, waking them up, shutting them down, and more. Whether you're a beginner or an advanced user, this guide will help you navigate the dashboard with ease.</p>
+
+    <h4>Overview</h4>
+    <p>The dashboard allows you to control two devices: a <strong>Desktop</strong> and a <strong>Server</strong>. You can check their online/offline status, wake them up using Wake-on-LAN (WOL), or send power commands like Shutdown, Sleep, or Hibernate (Desktop only). The interface is designed to be intuitive, with real-time status updates and a log panel to track actions.</p>
+
+    <h4>Getting Started</h4>
+    <p>When you load the dashboard, it automatically checks the status of the Desktop. The Server section requires admin access to view and control. Here's how to begin:</p>
+    <ul>
+      <li><strong>Desktop Section</strong>: Located at the top, it shows the Desktop's status (e.g., "Desktop Online" or "Desktop Offline") and available actions.</li>
+      <li><strong>Server Section</strong>: Located below the Desktop section, it is collapsed by default. Click the "Server (Admin)" header to expand it and log in as an admin.</li>
+      <li><strong>Log Panel</strong>: At the bottom, it displays real-time logs of all actions and device responses, timestamped for clarity.</li>
+      <li><strong>Guide Button</strong>: Click the question mark icon (<i class="fas fa-question-circle"></i>) in the top-right corner to open this guide.</li>
     </ul>
+
+    <h4>Managing the Desktop</h4>
+    <p>The Desktop section allows you to monitor and control a desktop computer. Here's how to use it:</p>
+    <ul>
+      <li><strong>Check Status</strong>: Click the <code>Refresh</code> button to check if the Desktop is online or offline. The status dot will turn white for "Online" or gray for "Offline".</li>
+      <li><strong>Wake Up</strong>: If the Desktop is offline, a <code>Wake Up</code> button appears. Click it to send a Wake-on-LAN signal. The status will show "Desktop Waking Up..." and the log panel will display updates like "Sent wake-up signal to Desktop. Waiting for it to come online..." or "Desktop starting. 5 seconds before checking again."</li>
+      <li><strong>Power Commands</strong>: If the Desktop is online, you'll see three buttons:
+        <ul>
+          <li><code>Shutdown</code>: Powers off the Desktop completely.</li>
+          <li><code>Sleep</code>: Puts the Desktop into a low-power sleep mode.</li>
+          <li><code>Hibernate</code>: Saves the Desktop's state to disk and powers off, allowing quick resumption later.</li>
+        </ul>
+        Clicking any of these sends a command, and the log panel will show progress (e.g., "Desktop off command sent. Waiting for confirmation...").
+      </li>
+      <li><strong>Status Indicators</strong>:
+        <ul>
+          <li><strong>Desktop Online</strong>: White status dot, action buttons available.</li>
+          <li><strong>Desktop Offline</strong>: Gray status dot, only "Wake Up" button available.</li>
+          <li><strong>Desktop Waking Up...</strong>: Gray status dot, shows during wake-up attempts.</li>
+          <li><strong>Desktop Offline (Timeout)</strong>: Gray status dot, appears if a wake-up attempt fails after 60 seconds.</li>
+        </ul>
+      </li>
+    </ul>
+
+    <h4>Managing the Server (Admin Access Required)</h4>
+    <p>The Server section is restricted to admin users. Here's how to access and use it:</p>
+    <ul>
+      <li><strong>Accessing the Server Controls</strong>:
+        <ul>
+          <li>Click the "Server (Admin)" header to expand the section.</li>
+          <li>A login modal will appear. Enter the username <code>admin</code> and password <code>admin</code> (case-sensitive) to log in.</li>
+          <li>Upon successful login, the Server controls will appear, and the dashboard will check the Server's status.</li>
+        </ul>
+      </li>
+      <li><strong>Check Status</strong>: Click the <code>Refresh</code> button to check if the Server is online or offline. The status dot will turn white for "Online" or gray for "Offline".</li>
+      <li><strong>Wake Up</strong>: If the Server is offline, a <code>Wake Up</code> button appears. Click it to send a Wake-on-LAN signal. The status will show "Server Waking Up..." and the log panel will display updates like "Server starting. 15 seconds before checking again." Note that Server wake-up can take up to 3 minutes.</li>
+      <li><strong>Power Commands</strong>: If the Server is online, you'll see two buttons:
+        <ul>
+          <li><code>Shutdown</code>: Powers off the Server completely.</li>
+          <li><code>Sleep</code>: Puts the Server into a low-power sleep mode.</li>
+        </ul>
+      </li>
+      <li><strong>Status Indicators</strong>:
+        <ul>
+          <li><strong>Server Online</strong>: White status dot, action buttons available.</li>
+          <li><strong>Server Offline</strong>: Gray status dot, only "Wake Up" button available.</li>
+          <li><strong>Server Waking Up...</strong>: Gray status dot, shows during wake-up attempts.</li>
+          <li><strong>Server Offline (Timeout)</strong>: Gray status dot, appears if a wake-up attempt fails after 3 minutes.</li>
+        </ul>
+      </li>
+    </ul>
+
+    <h4>Using the Log Panel</h4>
+    <p>The log panel at the bottom of the dashboard provides real-time feedback on all actions and device responses. Each log entry includes a timestamp and a message, such as:</p>
+    <ul>
+      <li><code>[06:28:03 PM] Desktop online. Reply 'off', 'sleep', or 'ht'</code>: Indicates the Desktop is online and ready for commands.</li>
+      <li><code>[06:28:10 PM] Sent wake-up signal to Server. Waiting for it to come online...</code>: Shows a wake-up attempt has started.</li>
+      <li><code>[06:28:25 PM] Timeout: Desktop did not come online in time.</code>: Indicates a wake-up attempt failed.</li>
+    </ul>
+    <p>To manage logs:</p>
+    <ul>
+      <li><strong>Scroll</strong>: Use the scrollbar to view older logs (up to 20rem height).</li>
+      <li><strong>Clear Logs</strong>: Click the <code>Clear</code> button to reset the log panel. A new log entry will confirm "Logs cleared."</li>
+    </ul>
+
+    <h4>Troubleshooting Tips</h4>
+    <p>If you encounter issues, try these steps:</p>
+    <ul>
+      <li><strong>Status Stuck on "Checking status..."</strong>: Refresh the page or click <code>Refresh</code> again. Ensure your internet connection is stable and the MQTT broker is reachable.</li>
+      <li><strong>Wake-Up Fails with "Timeout"</strong>: Verify that the target device (Desktop or Server) supports Wake-on-LAN and is configured correctly in the BIOS/UEFI settings. Check the network connection and ensure the ESP8266 device is powered on.</li>
+      <li><strong>Admin Login Fails</strong>: Ensure you’re using the correct credentials (<code>admin</code>/<code>admin</code>). The login is case-sensitive.</li>
+      <li><strong>No Response from Device</strong>: Check the log panel for error messages. If you see "Disconnected from broker," the dashboard has lost its connection to the MQTT server. Refresh the page to reconnect.</li>
+      <li><strong>Buttons Not Responding</strong>: If buttons are disabled (grayed out), ensure you’re logged in as an admin for Server controls. For Desktop, wait for the status check to complete.</li>
+    </ul>
+
+    <h4>Advanced Notes</h4>
+    <p>For users with technical knowledge:</p>
+    <ul>
+      <li><strong>MQTT Communication</strong>: The dashboard communicates with an ESP8266 device via MQTT over a secure WebSocket connection (wss://5239ffaebcbc49c6890527ee9c4b76e8.s1.eu.hivemq.cloud:8884/mqtt). The ESP8266 handles Wake-on-LAN and status checks using the Ping library.</li>
+      <li><strong>Status Messages</strong>: The ESP8266 sends messages like "Desktop online. Reply 'off', 'sleep', or 'ht'" or "Server offline. Reply 'wake' to wake it." These are processed to update the UI dynamically.</li>
+      <li><strong>Wake-on-LAN Timing</strong>: Desktop wake-up attempts timeout after 60 seconds, while Server wake-up attempts timeout after 3 minutes, reflecting different expected boot times.</li>
+      <li><strong>Interactive Background</strong>: The background canvas features animated dots that respond to mouse movement, creating a visually engaging effect. Move your cursor over the background to see the dots gravitate toward it.</li>
+    </ul>
+
+    <h4>Need Further Help?</h4>
+    <p>If you have questions or encounter persistent issues, contact your system administrator or check the log panel for detailed error messages. Ensure all devices are on the same network (192.168.100.0/24) and that the ESP8266 is properly configured.</p>
+
     <button class="btn mt-3 w-full text-xs" onclick="toggleGuide()">Close</button>
   </div>
 
 <script>
-  // Enhanced background animation
+  // Enhanced background animation with interactivity
   const canvas = document.getElementById('bgCanvas');
   const ctx = canvas.getContext('2d');
   canvas.width = window.innerWidth;
@@ -405,6 +503,17 @@
   window.addEventListener('resize', () => {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
+  });
+
+  let mouse = { x: null, y: null };
+  canvas.addEventListener('mousemove', (event) => {
+    const rect = canvas.getBoundingClientRect();
+    mouse.x = event.clientX - rect.left;
+    mouse.y = event.clientY - rect.top;
+  });
+  canvas.addEventListener('mouseout', () => {
+    mouse.x = null;
+    mouse.y = null;
   });
 
   class Dot {
@@ -447,8 +556,28 @@
       });
     }
     update() {
+      // Mouse interaction
+      if (mouse.x !== null && mouse.y !== null) {
+        const dx = this.x - mouse.x;
+        const dy = this.y - mouse.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        const maxDistance = 100;
+        if (distance < maxDistance) {
+          const force = (maxDistance - distance) / maxDistance;
+          this.dx += (dx / distance) * force * 2;
+          this.dy += (dy / distance) * force * 2;
+        }
+      }
+      // Boundary checks
       if (this.x > canvas.width || this.x < 0) this.dx = -this.dx;
       if (this.y > canvas.height || this.y < 0) this.dy = -this.dy;
+      // Limit speed
+      const maxSpeed = 2;
+      const speed = Math.sqrt(this.dx * this.dx + this.dy * this.dy);
+      if (speed > maxSpeed) {
+        this.dx = (this.dx / speed) * maxSpeed;
+        this.dy = (this.dy / speed) * maxSpeed;
+      }
       this.x += this.dx;
       this.y += this.dy;
       this.trail.unshift({ x: this.x, y: this.y });
@@ -510,7 +639,6 @@
   const serverRefreshBtn = document.getElementById('serverRefreshBtn');
   const serverActionLoading = document.getElementById('serverActionLoading');
   const serverActionText = document.getElementById('serverActionText');
-  const loadingOverlay = document.getElementById('loadingOverlay');
   const clearLog = document.getElementById('clearLog');
   const guideBtn = document.getElementById('guideBtn');
   const guideOverlay = document.getElementById('guideOverlay');
@@ -619,7 +747,6 @@
       logMessage('Subscribed to desktop replies.');
       client.publish("status/desktop", "status");
     });
-    loadingOverlay.classList.add('hidden');
   });
 
   client.on('message', (topic, message) => {
@@ -627,41 +754,42 @@
     logMessage(`${msg}`);
     const device = topic.includes('desktop') ? 'desktop' : 'server';
     const buttonsDiv = device === 'desktop' ? desktopButtonsDiv : serverButtonsDiv;
-    clearButtons(buttonsDiv);
-
     const lowerMsg = msg.toLowerCase();
 
-    if (lowerMsg.includes('offline')) {
+    if (lowerMsg.includes('offline') && !lowerMsg.includes('timeout')) {
       setActionLoading(device, false);
       setStatus(device, '#6b7280', `${device.charAt(0).toUpperCase() + device.slice(1)} Offline`);
+      clearButtons(buttonsDiv);
       addButton(buttonsDiv, "Wake Up", `wake/${device}`, "wake", !isServerAdmin && device === 'server', 'fa-bolt');
-    } else if (lowerMsg.includes('online') && !lowerMsg.includes('already online')) {
+    } else if (lowerMsg.includes('online') && (lowerMsg.includes('reply') || lowerMsg.includes('ready'))) {
       setActionLoading(device, false);
       setStatus(device, '#ffffff', `${device.charAt(0).toUpperCase() + device.slice(1)} Online`);
+      clearButtons(buttonsDiv);
       addButton(buttonsDiv, "Shutdown", `status/${device}`, "off", !isServerAdmin && device === 'server', 'fa-power-off');
       addButton(buttonsDiv, "Sleep", `status/${device}`, "sleep", !isServerAdmin && device === 'server', 'fa-bed');
       if (device === 'desktop') addButton(buttonsDiv, "Hibernate", `status/${device}`, "ht", false, 'fa-snowflake');
     } else if (lowerMsg.includes('starting') || lowerMsg.includes('waiting') || lowerMsg.includes('sent') || lowerMsg.includes('signal')) {
       setActionLoading(device, true, msg);
-    } else if (lowerMsg.includes('confirmed') || lowerMsg.includes('initiated') || lowerMsg.includes('already online')) {
+      setStatus(device, '#6b7280', `${device.charAt(0).toUpperCase() + device.slice(1)} Waking Up...`);
+      clearButtons(buttonsDiv);
+      addButton(buttonsDiv, "Wake Up", `wake/${device}`, "wake", !isServerAdmin && device === 'server', 'fa-bolt');
+    } else if (lowerMsg.includes('timeout')) {
       setActionLoading(device, false);
-      setStatus(device, '#ffffff', `${device.charAt(0).toUpperCase() + device.slice(1)} Online`);
-      addButton(buttonsDiv, "Shutdown", `status/${device}`, "off", !isServerAdmin && device === 'server', 'fa-power-off');
-      addButton(buttonsDiv, "Sleep", `status/${device}`, "sleep", !isServerAdmin && device === 'server', 'fa-bed');
-      if (device === 'desktop') addButton(buttonsDiv, "Hibernate", `status/${device}`, "ht", false, 'fa-snowflake');
+      setStatus(device, '#6b7280', `${device.charAt(0).toUpperCase() + device.slice(1)} Offline (Timeout)`);
+      clearButtons(buttonsDiv);
+      addButton(buttonsDiv, "Wake Up", `wake/${device}`, "wake", !isServerAdmin && device === 'server', 'fa-bolt');
       setTimeout(() => {
         client.publish(`status/${device}`, "status");
       }, 1500);
-    } else if (lowerMsg.includes('failed') || lowerMsg.includes('timeout')) {
+    } else if (lowerMsg.includes('confirmed') || lowerMsg.includes('initiated') || lowerMsg.includes('failed') || lowerMsg.includes('already online')) {
       setActionLoading(device, false);
-      setStatus(device, '#6b7280', `${device.charAt(0).toUpperCase() + device.slice(1)} Offline`);
-      addButton(buttonsDiv, "Wake Up", `wake/${device}`, "wake", !isServerAdmin && device === 'server', 'fa-bolt');
       setTimeout(() => {
         client.publish(`status/${device}`, "status");
       }, 1500);
     } else if (lowerMsg.includes('cancelled')) {
       setActionLoading(device, false);
       setStatus(device, '#ffffff', `${device.charAt(0).toUpperCase() + device.slice(1)} Online (Cancelled)`);
+      clearButtons(buttonsDiv);
       addButton(buttonsDiv, "Shutdown", `status/${device}`, "off", !isServerAdmin && device === 'server', 'fa-power-off');
       addButton(buttonsDiv, "Sleep", `status/${device}`, "sleep", !isServerAdmin && device === 'server', 'fa-bed');
       if (device === 'desktop') addButton(buttonsDiv, "Hibernate", `status/${device}`, "ht", false, 'fa-snowflake');
@@ -678,7 +806,7 @@
     if (isServerAdmin) {
       logMessage('Checking server status...');
       client.publish("status/server", "status");
-      setActionLoading('server', true, 'Checking status...');
+      setActionLoading('server', true, 'Checking server status...');
     }
   });
 
@@ -688,7 +816,6 @@
     if (isServerAdmin) setStatus('server', '#6b7280', 'Disconnected');
     setActionLoading('desktop', false);
     setActionLoading('server', false);
-    loadingOverlay.classList.remove('hidden');
   });
 
   setActionLoading('desktop', true, 'Checking status...');
